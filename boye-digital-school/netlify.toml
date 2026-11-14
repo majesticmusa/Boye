@@ -1,4 +1,4 @@
 "$schema" = "https://open-api.netlify.com/netlify.schema.json"
 
 [build]
-  command = "cd boye-digital-school && npm run build"
+  command = "npm run build"
