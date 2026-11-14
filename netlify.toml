@@ -1,4 +1,0 @@
-"$schema" = "https://open-api.netlify.com/netlify.schema.json"
-
-[build]
-  command = "npm run build"
