@@ -1,39 +1,45 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowDown, ArrowUpRight, GraduationCap, ShieldCheck } from 'lucide-react';
-import { bookingUrl } from '@/lib/demo';
-import { BookingLink, DemoExperience } from './experience';
+import { BookOpen, Calculator, ChartNoAxesCombined, FlaskConical } from 'lucide-react';
+import { bookingUrl, demoLessons } from '@/lib/demo';
+import { BookingLink, DemoVisit } from './experience';
 import styles from './demo.module.css';
 
 export const metadata: Metadata = {
   title: 'School Partnership Demo | Boye Digital School AI',
-  description: 'Try AI tutoring for Mathematics, English and Biology, and explore a fictional student dashboard built for private secondary schools in Port Harcourt.',
+  description: 'Explore the Mathematics, English and Biology tutors and see sample student progress. No sign-in needed.',
 };
 
+const cards = [
+  { title: 'Mathematics Tutor', ...demoLessons.Mathematics, Icon: Calculator },
+  { title: 'English Tutor', ...demoLessons.English, Icon: BookOpen },
+  { title: 'Biology Tutor', ...demoLessons.Biology, Icon: FlaskConical },
+  { title: 'Learning Dashboard', slug: 'dashboard', description: 'Preview sample student progress.', Icon: ChartNoAxesCombined },
+];
+
 export default function DemoPage() {
-  return <main className={styles.page}>
-    <header className={styles.nav}>
-      <Link href="/demo" className={styles.brand}><GraduationCap size={28} /> Boye Digital School AI</Link>
-      <Link href="/">Student sign-in <ArrowUpRight size={16} /></Link>
-    </header>
-    <section className={styles.hero}>
-      <div>
-        <p className={styles.kicker}>FOR PRIVATE SECONDARY SCHOOLS IN PORT HARCOURT</p>
-        <h1>Give students a place to keep learning after class.</h1>
-        <p>Experience how AI tutors can explain a difficult topic, guide students through practice, and help them see what to work on next.</p>
-        <a className={styles.yellow} href="#try-tutors">Try the AI tutors <ArrowDown size={18} /></a>
-      </div>
-      <aside>
-        <ShieldCheck size={30} />
-        <h2>Explore before you partner</h2>
-        <p>Ask a few practice questions and view a fictional student dashboard. No account is needed.</p>
-        <p>This demo is illustrative. A full school deployment requires a separate partnership.</p>
-      </aside>
-    </section>
-    <DemoExperience />
-    <footer className={styles.footer}>
-      <div><h2>Bring Boye Digital School AI to your school</h2><p>Let’s discuss your subjects, rollout and school support needs.</p></div>
-      <BookingLink href={bookingUrl} />
-    </footer>
-  </main>;
+  return (
+    <main className={styles.landing}>
+      <DemoVisit />
+      <header className={styles.banner}>
+        <p>BOYE DIGITAL SCHOOL AI</p>
+        <h1>Experience the Future of Learning in Your School</h1>
+        <div>See how AI-powered tutors can help your students learn beyond classroom hours.</div>
+      </header>
+      <nav className={styles.cards} aria-label="Explore the school demo">
+        {cards.map(({ title, slug, description, Icon }) => (
+          <Link href={`/demo/${slug}`} key={slug} className={styles.card}>
+            <Icon size={23} aria-hidden="true" />
+            <h2>{title}</h2>
+            <p>{description}</p>
+          </Link>
+        ))}
+      </nav>
+      <footer className={styles.partnership}>
+        <h2>Interested in bringing this to your school?</h2>
+        <BookingLink href={bookingUrl} />
+        <Link href="/demo/feedback" className={styles.feedbackLink}>Give feedback on the demo</Link>
+      </footer>
+    </main>
+  );
 }
