@@ -1,20 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { ArrowUpRight, BookOpen, Calculator, FlaskConical } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import { subjects } from '@/lib/demo';
+import { ArrowUpRight } from 'lucide-react';
 import styles from './demo.module.css';
-
-const samples = [
-  'How do I solve 2x + 5 = 17?',
-  'How can I identify the main idea in a paragraph?',
-  'How does photosynthesis help a plant grow?',
-];
-const icons = [Calculator, BookOpen, FlaskConical];
-const descriptions = ['Work through an algebra problem.', 'Practise grammar and comprehension.', 'Explore how living things work.'];
 
 async function submit(payload: object, keepalive = false) {
   const response = await fetch('/api/demo', {
@@ -30,41 +18,24 @@ async function submit(payload: object, keepalive = false) {
 }
 
 export function BookingLink({ href }: { href: string }) {
-  return <a className={styles.yellow} href={href} onClick={() => {
+  return <a className={styles.bookingLink} href={href} onClick={() => {
     void submit({ action: 'booking' }, true).catch(() => {});
-  }}>Book a school partnership call <ArrowUpRight size={18} /></a>;
+  }}>Book a School Partnership Demo <ArrowUpRight size={18} /></a>;
 }
 
-export function DemoExperience() {
+export function DemoVisit() {
   const visited = useRef(false);
-  const [subject, setSubject] = useState<(typeof subjects)[number]>('Mathematics');
-  const [question, setQuestion] = useState(samples[0]);
-  const [answer, setAnswer] = useState('');
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [feedbackStatus, setFeedbackStatus] = useState('');
   useEffect(() => {
     if (visited.current) return;
     visited.current = true;
     void submit({ action: 'visit' }).catch(() => {});
   }, []);
+  return null;
+}
 
-  async function ask(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy || !question.trim()) return;
-    setBusy(true);
-    setAnswer('');
-    setError('');
-    try {
-      const data = await submit({ action: 'tutor', subject, question });
-      setAnswer(data.content);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Try again in a moment.');
-    } finally {
-      setBusy(false);
-    }
-  }
+export function DemoFeedback() {
+  const [sending, setSending] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState('');
 
   async function sendFeedback(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -91,41 +62,6 @@ export function DemoExperience() {
   }
 
   return <>
-    <section className={styles.section} id="try-tutors">
-      <h2>Try a subject tutor</h2>
-      <p>Send up to three practice questions per network each day, subject to the shared daily limit. Avoid names, contact details and student records.</p>
-      <div className={styles.subjects} role="group" aria-label="Choose a subject">
-        {subjects.map((name, index) => {
-          const Icon = icons[index];
-          return <button type="button" key={name} disabled={busy} aria-pressed={subject === name} onClick={() => {
-            setSubject(name); setQuestion(samples[index]); setAnswer(''); setError('');
-          }}><Icon size={22} /><strong>{name}</strong><span>{descriptions[index]}</span></button>;
-        })}
-      </div>
-      <form className={styles.sheet} onSubmit={ask}>
-        <label htmlFor="demo-question">Your {subject} question</label>
-        <textarea id="demo-question" required rows={3} maxLength={400} value={question} disabled={busy} onChange={event => setQuestion(event.target.value)} />
-        <button className={styles.primary} disabled={busy || !question.trim()}>{busy ? 'Preparing an answer…' : 'Ask the tutor'}</button>
-        <div aria-live="polite" aria-busy={busy}>
-          {error && <p role="alert">{error}</p>}
-          {answer && <div className={styles.answer}><ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{answer}</ReactMarkdown></div>}
-        </div>
-        <small>Questions go to OpenRouter and its model provider. Boye Digital does not store question or answer text in demo analytics. AI can make mistakes.</small>
-      </form>
-    </section>
-    <section className={styles.section}>
-      <h2>See what a student dashboard could show</h2>
-      <p>All names, activity and progress below are fictional.</p>
-      <div className={styles.sheet}>
-        <h3>Sample learner · SS1</h3>
-        <div className={styles.progress}>
-          {[['Mathematics', 72], ['English', 60], ['Biology', 80]].map(([name, value]) =>
-            <div key={name}><strong>{name}</strong><span>{value}%</span><progress aria-label={String(name)} value={Number(value)} max={100} /></div>
-          )}
-        </div>
-        <p><strong>Next practice</strong> · Linear equations</p>
-      </div>
-    </section>
     <section className={styles.section}>
       <h2>Tell us what your school needs</h2>
       <p>Share what would make the platform useful for your school. Use official school contact details and leave out student information.</p>
