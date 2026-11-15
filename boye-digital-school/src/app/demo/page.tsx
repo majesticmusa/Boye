@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowUpRight, BookOpen, Calculator, ChartNoAxesColumnIncreasing, FlaskConical } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Calculator, BarChart3, FlaskConical } from 'lucide-react';
 import styles from './demo.module.css';
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ const subjects = [
   { title: 'Mathematics Tutor', description: 'Try a sample SS1 lesson.', Icon: Calculator },
   { title: 'English Tutor', description: 'Explore grammar and comprehension.', Icon: BookOpen },
   { title: 'Biology Tutor', description: 'Explore science explanations.', Icon: FlaskConical },
-  { title: 'Learning Dashboard', description: 'Preview sample student progress.', Icon: ChartNoAxesColumnIncreasing },
+  { title: 'Learning Dashboard', description: 'Preview sample student progress.', Icon: BarChart3 },
 ];
 
 export default function DemoPage() {
