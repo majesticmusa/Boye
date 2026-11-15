@@ -1,2 +1,5 @@
-import TutorWorkspace from '@/components/tutor-workspace';
-export default function Home(){return <TutorWorkspace hosted={Boolean(process.env.VERCEL)}/>}
+import DemoPage from './demo/page';
+
+export default function Home() {
+  return <DemoPage />;
+}
