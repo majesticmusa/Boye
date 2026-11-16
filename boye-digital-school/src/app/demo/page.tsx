@@ -8,14 +8,14 @@ export const metadata: Metadata = {
   description: 'Explore AI powered learning subjects for your school.',
 };
 
-const learningUrl = 'https://boye-b755.vercel.app/';
+const learningUrl = 'https://boye-b755.vercel.app/demo';
 const bookingUrl = 'https://www.boyedigital.com.ng/service-booking';
 
 const subjects = [
-  { title: 'Mathematics Tutor', description: 'Try a sample SS1 lesson.', Icon: Calculator },
-  { title: 'English Tutor', description: 'Explore grammar and comprehension.', Icon: BookOpen },
-  { title: 'Biology Tutor', description: 'Explore science explanations.', Icon: FlaskConical },
-  { title: 'Learning Dashboard', description: 'Preview sample student progress.', Icon: BarChart3 },
+  { slug: 'mathematics', title: 'Mathematics Tutor', description: 'Try a sample SS1 lesson.', Icon: Calculator },
+  { slug: 'english', title: 'English Tutor', description: 'Explore grammar and comprehension.', Icon: BookOpen },
+  { slug: 'biology', title: 'Biology Tutor', description: 'Explore science explanations.', Icon: FlaskConical },
+  { slug: 'dashboard', title: 'Learning Dashboard', description: 'Preview sample student progress.', Icon: BarChart3 },
 ];
 
 export default function DemoPage() {
@@ -27,8 +27,8 @@ export default function DemoPage() {
     </header>
 
     <section className={styles.subjects} aria-label="Explore learning subjects">
-      {subjects.map(({ title, description, Icon }) =>
-        <a className={styles.card} href={learningUrl} key={title}>
+      {subjects.map(({ slug, title, description, Icon }) =>
+        <a className={styles.card} href={`${learningUrl}/${slug}`} key={title}>
           <Icon size={21} aria-hidden="true" />
           <strong>{title}</strong>
           <span>{description}</span>
@@ -41,7 +41,7 @@ export default function DemoPage() {
       <Link className={styles.booking} href={bookingUrl}>
         Book a School Partnership Demo <ArrowUpRight size={16} aria-hidden="true" />
       </Link>
-      <p>Illustrative concept for the public demonstration page.</p>
+      <p>Try the tutors instantly. No email or sign-in required.</p>
     </footer>
   </main>;
 }
