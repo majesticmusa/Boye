@@ -69,8 +69,8 @@ export async function POST(request: Request) {
     });
 
     if (error) return respond({ error: 'The interactive demo is temporarily unavailable.' }, 503);
-    if (data === 'daily') return respond({ error: 'Today’s shared demo limit has been reached. Try again tomorrow.' }, 429);
-    if (data === 'visitor') return respond({ error: 'You’ve reached the demo limit for today. Try again tomorrow.' }, 429);
+    if (data === 'daily') return respond({ code: 'demo_limit', error: 'Today’s shared live-question allowance has been used. Explore the worked answers now or try your own question tomorrow.' }, 429);
+    if (data === 'visitor') return respond({ code: 'demo_limit', error: 'This network has used today’s live-question allowance. Explore the worked answers now or try your own question tomorrow.' }, 429);
     if (data !== 'accepted') return respond({ error: 'The interactive demo is temporarily unavailable.' }, 503);
     if (input.action !== 'tutor') return respond({ ok: true });
 
