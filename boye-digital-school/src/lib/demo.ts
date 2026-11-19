@@ -1,3 +1,4 @@
+import { levels } from './tutor';
 import { z } from 'zod';
 
 export const subjects = ['Mathematics', 'English', 'Biology'] as const;
@@ -5,6 +6,7 @@ export const demoRequest = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('tutor'),
     subject: z.enum(subjects),
+    level: z.enum(levels).optional(),
     question: z.string().trim().min(1).max(400),
   }).strict(),
   z.object({ action: z.enum(['visit', 'booking']) }).strict(),
