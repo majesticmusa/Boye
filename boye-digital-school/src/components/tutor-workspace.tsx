@@ -54,13 +54,104 @@ const mathsPractice = [
     ]
   }
 ];
+const demoTopics = {
+  Mathematics: { first: 'Algebra', practice: mathsPractice },
+  English: { first: 'Reading comprehension', practice: [
+  {
+    "topic": "Grammar and agreement",
+    "questions": [
+      "Which verb fits ‘The basket of oranges is/are heavy’, and why?",
+      "Rewrite ‘She don’t enjoy reading’ and explain the correction."
+    ]
+  },
+  {
+    "topic": "Vocabulary in context",
+    "questions": [
+      "What does ‘reluctant’ mean in ‘Ada was reluctant to speak, but finally raised her hand’?",
+      "How does the meaning of ‘bank’ change between a river bank and a savings bank?"
+    ]
+  },
+  {
+    "topic": "Punctuation",
+    "questions": [
+      "Where should the apostrophe go in ‘the girls uniforms’ if several girls own them?",
+      "How would you punctuate this direct speech: Bisi said I will come tomorrow?"
+    ]
+  },
+  {
+    "topic": "Essay writing",
+    "questions": [
+      "How can I start a descriptive essay about a rainy morning in Port Harcourt?",
+      "How would I organise a paragraph arguing for a school library?"
+    ]
+  },
+  {
+    "topic": "Figures of speech",
+    "questions": [
+      "Why is ‘the classroom was a beehive’ a metaphor?",
+      "How could I turn ‘the wind was loud’ into personification?"
+    ]
+  },
+  {
+    "topic": "Letter writing",
+    "questions": [
+      "How should I open a formal letter to my principal requesting a reading club?",
+      "How would my closing change if I wrote the same news to a friend?"
+    ]
+  }
+] },
+  Biology: { first: 'Photosynthesis', practice: [
+  {
+    "topic": "Cell structure",
+    "questions": [
+      "Which structures would help me identify a typical leaf cell under a microscope?",
+      "How do the cell wall and cell membrane differ in function?"
+    ]
+  },
+  {
+    "topic": "Nutrition",
+    "questions": [
+      "Why does the body need both carbohydrates and proteins?",
+      "How does chewing help the digestion of food?"
+    ]
+  },
+  {
+    "topic": "Ecology",
+    "questions": [
+      "Can you build a food chain using grass, a grasshopper, a frog and a snake?",
+      "What might happen to that food chain if the number of frogs falls?"
+    ]
+  },
+  {
+    "topic": "Respiration",
+    "questions": [
+      "How does breathing differ from cellular respiration?",
+      "Why do breathing and heart rate increase during exercise?"
+    ]
+  },
+  {
+    "topic": "Transport in plants",
+    "questions": [
+      "How does water travel from the roots to the leaves?",
+      "How do xylem and phloem differ in what they carry?"
+    ]
+  },
+  {
+    "topic": "Classification",
+    "questions": [
+      "What features help distinguish insects from spiders?",
+      "Why do biologists use scientific names for organisms?"
+    ]
+  }
+] },
+};
 const suggestions=['Help me understand fractions','Explain how to solve 2x + 5 = 17','Give me 3 practice questions'];
 export default function TutorWorkspace({hosted=false,guestSubject}:{hosted?:boolean;guestSubject?:DemoSubject}){
  const lesson=guestSubject?demoLessons[guestSubject]:undefined;
  const subject=guestSubject??'Mathematics';
- const mathDemo = guestSubject === 'Mathematics';
- const [focusTopic, setFocusTopic] = useState('Algebra');
- const practice = mathsPractice.find(item => item.topic === focusTopic);
+ const subjectTopics = demoTopics[subject];
+ const [focusTopic, setFocusTopic] = useState(subjectTopics.first);
+ const practice = subjectTopics.practice.find(item => item.topic === focusTopic);
  const prompts = practice?.questions ?? (lesson ? [lesson.question] : suggestions);
  const SubjectIcon=guestSubject==='English'?BookOpen:guestSubject==='Biology'?FlaskConical:Calculator;
  const maxLength=guestSubject?400:4000;
@@ -96,19 +187,19 @@ export default function TutorWorkspace({hosted=false,guestSubject}:{hosted?:bool
  function newChat(){setActive(fresh(active?.level,active?.topic));setQuestion('');setError('');setNotice('');setMenu(false);input.current?.focus()}
  function context(key:'level'|'topic',value:string){const s=fresh(active?.level,active?.topic);if(key==='level')s.level=value as Session['level'];else s.topic=value as Session['topic'];setActive(s);setQuestion('');setError('');setNotice('')}
  async function send(){const text=question.trim();if(lock.current||!text)return;lock.current=true;setBusy(true);setError('');setNotice('');const s=active?.sample?fresh(active.level,active.topic):active??fresh();const messages:Message[]=[...s.messages,{role:'user',content:text}];save({...s,messages,title:s.messages.length?s.title:text.slice(0,48)});setQuestion('');try{
- const r=await fetch(guestSubject?'/api/demo':'/api/tutor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(guestSubject?{action:'tutor',subject,question:text,...(mathDemo ? {level:s.level} : {})}:{level:s.level,topic:s.topic,messages:messages.slice(-11)}),signal:AbortSignal.timeout(35000)});const data=await r.json();if(!r.ok)throw new Error(data.error||'The tutor could not respond.');if(typeof data.content!=='string')throw new Error('Unreadable response.');save({...s,title:s.messages.length?s.title:text.slice(0,48),messages:[...messages,{role:'assistant',content:data.content}]});if(data.truncated)setNotice('This answer reached the response limit. Ask the tutor to continue.');
+ const r=await fetch(guestSubject?'/api/demo':'/api/tutor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(guestSubject?{action:'tutor',subject,question:text,level:s.level}:{level:s.level,topic:s.topic,messages:messages.slice(-11)}),signal:AbortSignal.timeout(35000)});const data=await r.json();if(!r.ok)throw new Error(data.error||'The tutor could not respond.');if(typeof data.content!=='string')throw new Error('Unreadable response.');save({...s,title:s.messages.length?s.title:text.slice(0,48),messages:[...messages,{role:'assistant',content:data.content}]});if(data.truncated)setNotice('This answer reached the response limit. Ask the tutor to continue.');
  }catch(e){save(s);setQuestion(text);setError(e instanceof Error&&e.name==='TimeoutError'?'The tutor took too long. Please try again.':e instanceof Error?e.message:'Please try again.')}finally{lock.current=false;setBusy(false);input.current?.focus()}}
  return <div className="app-shell">
  {menu&&<button className="scrim" aria-label="Close navigation" onClick={()=>setMenu(false)}/>}
- <aside className={`sidebar ${menu?'open':''}`}><Link className="brand" href={guestSubject?'/demo':'/'}><span className="brand-mark"><GraduationCap size={28}/></span><span>Boye Digital<small>SCHOOL AI</small></span></Link><div className="workspace-label">YOUR LEARNING SPACE</div><Link className="nav-item selected" href={guestSubject?'/demo':'/dashboard/tutors/mathematics'}><Sparkles size={19}/>{guestSubject?'Back to school demo':'AI subject tutor'}<ChevronRight size={15}/></Link>{mathDemo ? <nav aria-label="Learning subjects">
+ <aside className={`sidebar ${menu?'open':''}`}><Link className="brand" href={guestSubject?'/demo':'/'}><span className="brand-mark"><GraduationCap size={28}/></span><span>Boye Digital<small>SCHOOL AI</small></span></Link><div className="workspace-label">YOUR LEARNING SPACE</div><Link className="nav-item selected" href={guestSubject?'/demo':'/dashboard/tutors/mathematics'}><Sparkles size={19}/>{guestSubject?'Back to school demo':'AI subject tutor'}<ChevronRight size={15}/></Link>{guestSubject ? <nav aria-label="Learning subjects">
    <div className="workspace-label">LEARNING SUBJECTS</div>
    <Link className="nav-item" href="/demo/dashboard"><BookOpen size={18}/>Learning dashboard</Link>
    {(['Mathematics','English','Biology'] as const).map(name => <Link key={name} className={name === subject ? 'nav-item selected' : 'nav-item'} href={'/demo/' + demoLessons[name].slug} aria-current={name === subject ? 'page' : undefined}>{name}</Link>)}
  </nav> : <><div className="sidebar-section"><span>CONVERSATIONS</span><button disabled={busy} onClick={newChat} aria-label="New conversation"><Plus size={18}/></button></div><button className="new-chat" disabled={busy} onClick={newChat}><Plus size={17}/>New conversation</button><div className="history">{sessions.filter(s=>s.messages.length).map(s=><button key={s.id} disabled={busy} className={active?.id===s.id?'active':''} onClick={()=>{setActive(s);setQuestion('');setError('');setNotice('');setMenu(false)}}><MessageSquare size={15}/><span>{s.title}</span></button>)}{!sessions.some(s=>s.messages.length)&&<p>Your conversations will appear here during this visit.</p>}</div></>}<div className="sidebar-bottom"><ShieldCheck size={20}/><strong>A space to learn, safely</strong><p>Use practice questions. Keep personal information out of chats.</p></div><div className="demo-profile"><span>D</span><div>Demo learner<small>Learning workspace</small></div><i/></div></aside>
  <main><header className="topbar"><div><button className="menu-toggle" aria-label="Open navigation" onClick={()=>setMenu(true)}><Menu size={22}/></button><span className="breadcrumb">Learning workspace<ChevronRight size={14}/><strong>AI subject tutor</strong></span></div><span className="demo-badge"><i/>{guestSubject?'SCHOOL DEMO':hosted?'PHASE 1 · PREVIEW':'PHASE 1 · LOCAL DEMO'}</span></header><div className="page-content"><div className="page-heading"><div><div className="eyebrow">A LITTLE CURIOSITY. A LOT OF POSSIBILITY.</div><h1>Let’s work it out, together.</h1><p>Your patient study partner, one step at a time.</p></div><span className="heading-art" aria-hidden="true">x<span>²</span><i>+</i></span></div><div className="subject-strip"><div className="subject-icon"><SubjectIcon size={24}/></div><div><span className="label">YOUR SUBJECT</span><h2>{subject}</h2></div><span className="subject-tag">AI tutor</span><div className="subject-description">Big ideas.<br/><strong>Simple explanations.</strong></div></div>
  {hosted&&<div className="preview-notice"><ShieldCheck size={18}/><p><strong>Signed in as {userEmail}.</strong> Hosted requests are limited to 30 per hour.</p><button type="button" onClick={()=>void signOut()}>Sign out</button></div>}
- {guestSubject&&<div className="preview-notice"><ShieldCheck size={18}/><p><strong>{mathDemo ? active?.level ?? 'SS1' : 'SS1'} demo.</strong> Try a worked example or ask a live practice question. Up to three live questions per network per day.</p><Link href="/demo">All subjects</Link></div>}
- <div className="learning-grid"><section className="chat-panel" aria-label={`${subject} tutor`}><div className="chat-toolbar">{(!guestSubject || mathDemo)&&<><div className="context-select"><label htmlFor="level">Class level</label><select id="level" value={active?.level??'SS1'} disabled={busy} onChange={e=>context('level',e.target.value)}>{levels.map(l=><option key={l}>{l}</option>)}</select></div><div className="context-select topic-select"><label htmlFor="topic">Focus topic</label><select id="topic" value={mathDemo ? focusTopic : active?.topic??'Algebra'} disabled={busy} onChange={e=>{if(mathDemo){setFocusTopic(e.target.value);newChat()}else context('topic',e.target.value)}}>{(mathDemo ? ['Algebra', ...mathsPractice.map(item=>item.topic)] : topics).map(t=><option key={t}>{t}</option>)}</select></div></>}<button className="reset" disabled={busy} onClick={newChat} aria-label="Start a new conversation"><Plus size={17}/><span>New chat</span></button></div><div className="messages" role="log" aria-label="Tutor conversation" aria-live="polite" aria-busy={busy}>
+ {guestSubject&&<div className="preview-notice"><ShieldCheck size={18}/><p><strong>{active?.level ?? 'SS1'} demo.</strong> Try a worked example or ask a live practice question. Up to three live questions per network per day.</p><Link href="/demo">All subjects</Link></div>}
+ <div className="learning-grid"><section className="chat-panel" aria-label={`${subject} tutor`}><div className="chat-toolbar"><div className="context-select"><label htmlFor="level">Class level</label><select id="level" value={active?.level??'SS1'} disabled={busy} onChange={e=>context('level',e.target.value)}>{levels.map(l=><option key={l}>{l}</option>)}</select></div><div className="context-select topic-select"><label htmlFor="topic">Focus topic</label><select id="topic" value={guestSubject ? focusTopic : active?.topic??'Algebra'} disabled={busy} onChange={e=>{if(guestSubject){setFocusTopic(e.target.value);newChat()}else context('topic',e.target.value)}}>{(guestSubject ? [subjectTopics.first, ...subjectTopics.practice.map(item=>item.topic)] : topics).map(t=><option key={t}>{t}</option>)}</select></div><button className="reset" disabled={busy} onClick={newChat} aria-label="Start a new conversation"><Plus size={17}/><span>New chat</span></button></div><div className="messages" role="log" aria-label="Tutor conversation" aria-live="polite" aria-busy={busy}>
  {!active?.messages.length&&<div className="chat-welcome"><span className="tutor-avatar"><Sparkles size={28}/></span><span className="welcome-kicker">YOUR {subject.toUpperCase()} TUTOR</span><h2>Every question is a good start.</h2><p>Stuck on a problem or exploring something new?<br/>We’ll break it down and take it step by step.</p><div className="suggestions">{lesson&&!practice&&<button type="button" disabled={busy} onClick={()=>save({...fresh(active?.level,active?.topic),sample:true,title:lesson.question,messages:[{role:'user',content:lesson.question},{role:'assistant',content:lesson.answer}]})}><span><BookOpen size={17}/></span>View a worked example<ChevronRight size={16}/></button>}{prompts.map((s,i)=><button key={s} disabled={busy} onClick={()=>{setQuestion(s);input.current?.focus()}}><span>{i===2?<BookOpen size={17}/>:<Lightbulb size={17}/>}</span>{s}<ChevronRight size={16}/></button>)}</div></div>}
  {active?.messages.map((m,i)=><div className={`message ${m.role}`} key={i}><span className="message-avatar">{m.role==='assistant'?<Sparkles size={17}/>:'You'}</span><div><span className="message-label">{m.role==='assistant'?(active.sample?'Worked example':'Boye tutor · AI-generated'):'You'}</span><div className="message-content"><ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{m.content}</ReactMarkdown></div></div></div>)}{busy&&<div className="thinking"><Sparkles size={17}/>Working through it with you…</div>}{error&&<div className="error" role="alert"><strong>We couldn’t get an answer</strong><p>{error}</p><span>Your question is saved in the box below.</span></div>}{notice&&<p className="notice">{notice}</p>}<div ref={end}/></div>
  <div className="composer-area"><form onSubmit={e=>{e.preventDefault();void send()}}><label className="sr-only" htmlFor="question">Your {subject.toLowerCase()} question</label><textarea ref={input} id="question" placeholder="Ask a question. Let’s make it make sense…" value={question} maxLength={maxLength} rows={2} disabled={busy} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send()}}}/><button className="send" type="submit" disabled={busy||!question.trim()} aria-label="Send question"><ArrowUp size={20}/></button></form><div className="composer-note"><span><ShieldCheck size={13}/>AI can make mistakes. Check with your teacher.</span><span>{question.length}/{maxLength}</span></div></div></section>
