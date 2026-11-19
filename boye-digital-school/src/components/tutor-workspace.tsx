@@ -10,6 +10,50 @@ import {demoLessons,type DemoSubject} from '@/lib/demo';
 import {createClient} from '@/lib/supabase/client';
 type Session={sample?:boolean;id:string;title:string;level:typeof levels[number];topic:typeof topics[number];messages:Message[]};
 const fresh=(level:Session['level']='SS1',topic:Session['topic']='Algebra'):Session=>({id:crypto.randomUUID(),title:'New conversation',level,topic,messages:[]});
+const mathsPractice = [
+  {
+    "topic": "Percentages and profit",
+    "questions": [
+      "A schoolbag costs ₦8,000. What is its price after a 15% discount?",
+      "A trader buys a calculator for ₦4,000 and sells it for ₦4,800. What is the percentage profit?"
+    ]
+  },
+  {
+    "topic": "Sets",
+    "questions": [
+      "List the elements in the intersection of {2, 4, 6, 8} and {3, 6, 9}.",
+      "In a class of 30, 18 play football, 14 play volleyball and 6 play both. How many play neither?"
+    ]
+  },
+  {
+    "topic": "Indices",
+    "questions": [
+      "Simplify 3⁴ × 3² and explain the rule you used.",
+      "If 2ˣ = 32, how can I find x?"
+    ]
+  },
+  {
+    "topic": "Number bases",
+    "questions": [
+      "Convert 1011 from base two to base ten using place value.",
+      "How do I write 19 in base two?"
+    ]
+  },
+  {
+    "topic": "Geometry",
+    "questions": [
+      "Two angles in a triangle are 48° and 67°. Find the third angle.",
+      "A ladder 5 m long rests against a wall. Its foot is 3 m from the wall. How high does it reach if the ground is level and the wall is vertical?"
+    ]
+  },
+  {
+    "topic": "Statistics",
+    "questions": [
+      "Find the mean and median of 4, 6, 6, 8 and 11.",
+      "If 20 is added to the scores 3, 4, 5, 6 and 7, how do the mean and median change?"
+    ]
+  }
+];
 const suggestions=['Help me understand fractions','Explain how to solve 2x + 5 = 17','Give me 3 practice questions'];
 export default function TutorWorkspace({hosted=false,guestSubject}:{hosted?:boolean;guestSubject?:DemoSubject}){
  const lesson=guestSubject?demoLessons[guestSubject]:undefined;
@@ -57,7 +101,17 @@ export default function TutorWorkspace({hosted=false,guestSubject}:{hosted?:bool
  {hosted&&<div className="preview-notice"><ShieldCheck size={18}/><p><strong>Signed in as {userEmail}.</strong> Hosted requests are limited to 30 per hour.</p><button type="button" onClick={()=>void signOut()}>Sign out</button></div>}
  {guestSubject&&<div className="preview-notice"><ShieldCheck size={18}/><p><strong>SS1 demo.</strong> Try a worked example or ask a live practice question. Up to three live questions per network per day.</p><Link href="/demo">All subjects</Link></div>}
  <div className="learning-grid"><section className="chat-panel" aria-label={`${subject} tutor`}><div className="chat-toolbar">{!guestSubject&&<><div className="context-select"><label htmlFor="level">Class level</label><select id="level" value={active?.level??'SS1'} disabled={busy} onChange={e=>context('level',e.target.value)}>{levels.map(l=><option key={l}>{l}</option>)}</select></div><div className="context-select topic-select"><label htmlFor="topic">Focus topic</label><select id="topic" value={active?.topic??'Algebra'} disabled={busy} onChange={e=>context('topic',e.target.value)}>{topics.map(t=><option key={t}>{t}</option>)}</select></div></>}<button className="reset" disabled={busy} onClick={newChat} aria-label="Start a new conversation"><Plus size={17}/><span>New chat</span></button></div><div className="messages" role="log" aria-label="Tutor conversation" aria-live="polite" aria-busy={busy}>
- {!active?.messages.length&&<div className="chat-welcome"><span className="tutor-avatar"><Sparkles size={28}/></span><span className="welcome-kicker">YOUR {subject.toUpperCase()} TUTOR</span><h2>Every question is a good start.</h2><p>Stuck on a problem or exploring something new?<br/>We’ll break it down and take it step by step.</p><div className="suggestions">{lesson&&<button type="button" disabled={busy} onClick={()=>save({...fresh(),sample:true,title:lesson.question,messages:[{role:'user',content:lesson.question},{role:'assistant',content:lesson.answer}]})}><span><BookOpen size={17}/></span>View a worked example<ChevronRight size={16}/></button>}{(lesson?[lesson.question]:suggestions).map((s,i)=><button key={s} disabled={busy} onClick={()=>{setQuestion(s);input.current?.focus()}}><span>{i===2?<BookOpen size={17}/>:<Lightbulb size={17}/>}</span>{s}<ChevronRight size={16}/></button>)}</div></div>}
+ {!active?.messages.length&&<div className="chat-welcome"><span className="tutor-avatar"><Sparkles size={28}/></span><span className="welcome-kicker">YOUR {subject.toUpperCase()} TUTOR</span><h2>Every question is a good start.</h2><p>Stuck on a problem or exploring something new?<br/>We’ll break it down and take it step by step.</p><div className="suggestions">{lesson&&<button type="button" disabled={busy} onClick={()=>save({...fresh(),sample:true,title:lesson.question,messages:[{role:'user',content:lesson.question},{role:'assistant',content:lesson.answer}]})}><span><BookOpen size={17}/></span>View a worked example<ChevronRight size={16}/></button>}{guestSubject === 'Mathematics' && mathsPractice.map(({topic, questions}) => (
+  <details key={topic}>
+    <summary>{topic}</summary>
+    {questions.map(prompt => (
+      <button type="button" key={prompt} disabled={busy} onClick={() => {
+        setQuestion(prompt);
+        input.current?.focus();
+      }}>{prompt}<ChevronRight size={16}/></button>
+    ))}
+  </details>
+))}{(lesson?[lesson.question]:suggestions).map((s,i)=><button key={s} disabled={busy} onClick={()=>{setQuestion(s);input.current?.focus()}}><span>{i===2?<BookOpen size={17}/>:<Lightbulb size={17}/>}</span>{s}<ChevronRight size={16}/></button>)}</div></div>}
  {active?.messages.map((m,i)=><div className={`message ${m.role}`} key={i}><span className="message-avatar">{m.role==='assistant'?<Sparkles size={17}/>:'You'}</span><div><span className="message-label">{m.role==='assistant'?(active.sample?'Worked example':'Boye tutor · AI-generated'):'You'}</span><div className="message-content"><ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{m.content}</ReactMarkdown></div></div></div>)}{busy&&<div className="thinking"><Sparkles size={17}/>Working through it with you…</div>}{error&&<div className="error" role="alert"><strong>We couldn’t get an answer</strong><p>{error}</p><span>Your question is saved in the box below.</span></div>}{notice&&<p className="notice">{notice}</p>}<div ref={end}/></div>
  <div className="composer-area"><form onSubmit={e=>{e.preventDefault();void send()}}><label className="sr-only" htmlFor="question">Your {subject.toLowerCase()} question</label><textarea ref={input} id="question" placeholder="Ask a question. Let’s make it make sense…" value={question} maxLength={maxLength} rows={2} disabled={busy} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send()}}}/><button className="send" type="submit" disabled={busy||!question.trim()} aria-label="Send question"><ArrowUp size={20}/></button></form><div className="composer-note"><span><ShieldCheck size={13}/>AI can make mistakes. Check with your teacher.</span><span>{question.length}/{maxLength}</span></div></div></section>
  <aside className="learning-aside"><div className="tip-card"><Lightbulb size={23}/><span className="label">MAKE THE MOST OF YOUR TUTOR</span><h3>Understanding beats memorising.</h3><p>Try explaining what you already know. Your tutor can help you find the missing step.</p><div className="tip-example">{lesson?lesson.question:<>“I know I need to find x, but why do we subtract 5 first?”</>}</div></div><div className="how-card"><h3>A good way to learn</h3><ol>{[['Ask your question','Tell us where you’re stuck.'],['Work through the steps','Take your time. Ask why.'],['Give it a go','Try a practice problem.']].map(([a,b],i)=><li key={a}><span>{i+1}</span><div><strong>{a}</strong><p>{b}</p></div></li>)}</ol></div><div className="session-note"><MessageSquare size={16}/><p>{guestSubject?'Live questions are sent to OpenRouter and its model provider. Chats clear when you refresh.':'Chats stay in memory for this visit only. Refreshing clears them. Changing class or topic starts a new chat.'}</p></div></aside></div><footer>Built for curious minds. Made for Nigerian classrooms.<span>Boye Digital School AI</span></footer></div></main>{menu&&<button className="close-menu" onClick={()=>setMenu(false)} aria-label="Close navigation"><X/></button>}</div>
