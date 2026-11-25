@@ -2,6 +2,10 @@
 
 The public entry is `/`. Send organic, referral and Meta traffic there with `utm_source`, `utm_medium` and `utm_campaign`. The ten-question assessment saves the lead, calculates a score out of 20 and recommends a next step. Results include an illustrative clinic walkthrough. The Sprint costs ₦35,000. The 60-day offer costs ₦150,000. A verified Sprint payment unlocks ₦35,000 credit for seven days from payment.
 
+## Add the results-page sales video
+
+Upload the finished MP4 as `public/media/scorecard-vsl.mp4` on the marketing-funnel branch. The build detects it automatically. To include English captions, add `public/media/scorecard-vsl.en.vtt` in the same commit. Visitors see their score and priority first, then a click-to-play video and their recommended offer. Until the recording is uploaded, the same space shows a short written walkthrough. The build leaves placeholder players out. The offer and booking buttons work independently of playback.
+
 ## Publish and operate
 
 Connect the existing Netlify project **boye-funnel-build** to the **marketing-funnel** branch of majesticmusa/Boye. Leave the base directory empty. The repository root contains netlify.toml, the build command, the public directory and functions. Use Node 22. Run `npm install` and `npm run build` or use `netlify dev` locally. The build runs regression tests. Production records survive redeploys. Previews use a separate store.
